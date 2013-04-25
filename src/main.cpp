@@ -84,12 +84,14 @@ struct reference_types
   {}
 };
 
+#define debug_msg std::cout << "[DEBUG] "
+
 void profile_body_test(std::string const& hostname, unsigned short port)
 {
   boost::asio::io_service io_service;
   boost::asio::ip::tcp::socket socket(io_service, boost::asio::ip::tcp::endpoint());
 
-  std::cout << "Hostname: " << hostname
+  debug_msg << "Hostname: " << hostname
             << " Port: " << port << std::endl;
         
   boost::asio::ip::tcp::resolver resolver(io_service);
@@ -139,7 +141,7 @@ int main(int argc, char** argv)
        || !vm.count("port") || !vm.count("username")
        || !vm.count("password"))
     {
-      std::cout << desc << std::endl;
+      debug_msg << desc << std::endl;
       return 1;
     }
 
@@ -156,10 +158,12 @@ int main(int argc, char** argv)
     boost::asio::ip::tcp::resolver resolver(io_service);
     boost::asio::ip::tcp::resolver::query query
       (boost::asio::ip::tcp::endpoint::protocol_type::v4(), hostname, "");
-    boost::asio::ip::tcp::endpoint remote_endpoint = *resolver.resolve(query, ec);
-
+    boost::asio::ip::tcp::resolver::iterator it = resolver.resolve(query, ec);
+    
     OB_DIAG_REQUIRE(!ec, "Resolving hostname was successful"
                     , "Resolving hostname failed with error: " << ec.message())
+    
+    boost::asio::ip::tcp::endpoint remote_endpoint = *it;
     
     remote_endpoint.port(port);
     socket.connect(remote_endpoint, ec);
@@ -202,7 +206,7 @@ int main(int argc, char** argv)
     {
       if(iiop::profile_body const* p = boost::get<iiop::profile_body>(&*first))
       {
-        std::cout << "IIOP Profile Body" << std::endl;
+        debug_msg << "IIOP Profile Body" << std::endl;
         profile_body_test(fusion::at_c<0u>(*p), fusion::at_c<1u>(*p));
         if(access_control_object_key.empty())
           access_control_object_key = fusion::at_c<2u>(*p);
@@ -211,7 +215,7 @@ int main(int argc, char** argv)
       else if(reference_types::profile_body_1_1_attr const* p
               = boost::get<reference_types::profile_body_1_1_attr>(&*first))
       {
-        std::cout << "IIOP Profile Body 1." << (int)fusion::at_c<0u>(*p) << std::endl;
+        debug_msg << "IIOP Profile Body 1." << (int)fusion::at_c<0u>(*p) << std::endl;
         profile_body_test(fusion::at_c<1u>(*p), fusion::at_c<2u>(*p));
         if(access_control_object_key.empty())
           access_control_object_key = fusion::at_c<3u>(*p);
@@ -219,7 +223,7 @@ int main(int argc, char** argv)
       }
       else
       {
-        std::cout << "Other Tagged Profiles" << std::endl;
+        debug_msg << "Other Tagged Profiles" << std::endl;
       }
     }
 
@@ -244,7 +248,7 @@ int main(int argc, char** argv)
     buskey_args_type buskey_args;
     ob_diag::read_reply(socket, giop::sequence[giop::octet], buskey_args);
 
-    std::cout << "Returned encoded buskey public key with size " << buskey_args.size() << std::endl;
+    debug_msg << "Returned encoded buskey public key with size " << buskey_args.size() << std::endl;
 
     EVP_PKEY* bus_key;
     {
@@ -304,7 +308,7 @@ int main(int argc, char** argv)
         r = EVP_PKEY_encrypt(ctx, &encrypted_block[0], &encrypted_size
                              , &block[0], block.size());
 
-        std::cout << "Encrypted Block size: " << encrypted_block.size() << std::endl;
+        debug_msg << "Encrypted Block size: " << encrypted_block.size() << std::endl;
       }
         
     }
@@ -319,7 +323,7 @@ int main(int argc, char** argv)
     ::login_info login_info;
     ob_diag::read_reply(socket, giop::string & giop::string & giop::ulong_, login_info);
 
-    std::cout << "Succesfully logged in. LoginInfo.id is " << login_info.id << std::endl;
+    debug_msg << "Succesfully logged in. LoginInfo.id is " << login_info.id << std::endl;
 
     std::vector<char> offer_registry_object_key;
 
@@ -350,7 +354,7 @@ int main(int argc, char** argv)
       {
         if(iiop::profile_body const* p = boost::get<iiop::profile_body>(&*first))
         {
-          std::cout << "IIOP Profile Body" << std::endl;
+          debug_msg << "IIOP Profile Body" << std::endl;
           profile_body_test(fusion::at_c<0u>(*p), fusion::at_c<1u>(*p));
           if(offer_registry_object_key.empty())
             offer_registry_object_key = fusion::at_c<2u>(*p);
@@ -359,7 +363,7 @@ int main(int argc, char** argv)
         else if(reference_types::profile_body_1_1_attr const* p
                 = boost::get<reference_types::profile_body_1_1_attr>(&*first))
         {
-          std::cout << "IIOP Profile Body 1." << (int)fusion::at_c<0u>(*p) << std::endl;
+          debug_msg << "IIOP Profile Body 1." << (int)fusion::at_c<0u>(*p) << std::endl;
           profile_body_test(fusion::at_c<1u>(*p), fusion::at_c<2u>(*p));
           if(offer_registry_object_key.empty())
             offer_registry_object_key = fusion::at_c<3u>(*p);
@@ -367,7 +371,7 @@ int main(int argc, char** argv)
         }
         else
         {
-          std::cout << "Other Tagged Profiles" << std::endl;
+          debug_msg << "Other Tagged Profiles" << std::endl;
         }
       }
 
@@ -404,7 +408,7 @@ int main(int argc, char** argv)
                             ]
                           , offers);
 
-      std::cout << "Found " << offers.size() << " offers" << std::endl;
+      debug_msg << "Found " << offers.size() << " offers" << std::endl;
     }
   }
   catch(ob_diag::require_error const&)

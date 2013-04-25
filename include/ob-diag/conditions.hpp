@@ -23,24 +23,24 @@ struct require_error : std::exception
 #define OB_DIAG_REQUIRE(COND, MSG_SUC, MSG_ERR)        \
   if(COND)                                            \
   {                                                   \
-    std::cout << MSG_SUC << std::endl;                  \
+    std::cout << "[INFO] " << MSG_SUC << std::endl;                  \
   }                                                     \
   else                                                  \
   {                                                   \
-    std::cout << MSG_ERR << std::endl;                \
+    std::cout << "[ERROR] " << MSG_ERR << std::endl;                \
     throw ::ob_diag::require_error();                 \
   }
 
 #define OB_DIAG_WARN(COND, MSG_WARN)        \
   if(COND)                                            \
   {                                                   \
-    std::cout << MSG_WARN << std::endl;                  \
+    std::cout << "[WARNING] " << MSG_WARN << std::endl;                  \
   }
 
 #define OB_DIAG_FAIL(COND, MSG_ERR)        \
   if(COND)                                            \
   {                                                   \
-    std::cout << MSG_ERR << std::endl;                  \
+    std::cout << "[FAIL] " << MSG_ERR << std::endl;                  \
     throw ::ob_diag::require_error();                    \
   }
 

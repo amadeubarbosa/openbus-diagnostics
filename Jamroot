@@ -3,10 +3,12 @@ project openbus-diagnostics
  : default-build <link>static
  ;
 
+lib dl : : <link>shared ;
+
 exe openbus-diagnostics
  : src/main.cpp /boost//program_options /boost//system /morbid//iiop
  /morbid//ior /openssl//openssl
- : <threading>multi <include>include
+ : <threading>multi <include>include <link>static:<source>dl
  ;
 
 install stage : openbus-diagnostics ;

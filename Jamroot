@@ -1,3 +1,27 @@
+import os ;
+
+if [ option.get openbus-with-puts : : 1 ]
+{
+  local boost-path = [ os.environ BOOST_PATH ] ;
+  use-project boost : $(boost-path) ;
+
+  local morbid-path = [ os.environ MORBID_PATH ] ;
+  use-project morbid : $(morbid-path) ;
+
+  local openssl-lib-path-env = [ os.environ OPENSSL_LIB_PATH ] ;
+  local openssl-include-path-env = [ os.environ OPENSSL_INCLUDE_PATH ] ;
+  path-constant openssl-lib-path : $(openssl-lib-path-env) ;
+  path-constant openssl-include-path : $(openssl-include-path-env) ;
+  
+  project openssl ;
+
+  lib crypto : : <name>crypto <search>$(openssl-lib-path)
+   ;
+
+  lib openssl : crypto : <name>ssl <search>$(openssl-lib-path)
+   : : <include>$(openssl-include-path)
+   ;
+}
 
 project openbus-diagnostics
  : default-build <link>static

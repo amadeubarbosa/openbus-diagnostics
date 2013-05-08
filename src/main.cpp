@@ -224,9 +224,6 @@ int main(int argc, char** argv)
 
     OB_DIAG_FAIL(!has_iiop_profile, "IOR has no IIOP Profile bodies. Can't communicate with TCP")
 
-    OB_DIAG_REQUIRE(!ec, "Connection to hostname and port of bus was successful"
-                    , "Connection to hostname and port of bus failed with error: " << ec.message())
-
     std::string busid;
 
     // Reading busid attribute

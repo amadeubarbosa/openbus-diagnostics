@@ -98,12 +98,13 @@ void profile_body_test(std::string const& hostname, unsigned short port)
   boost::asio::ip::tcp::resolver::query query
     (boost::asio::ip::tcp::endpoint::protocol_type::v4(), hostname, "");
   boost::system::error_code ec;
-  boost::asio::ip::tcp::endpoint remote_endpoint = *resolver.resolve(query, ec);
-  remote_endpoint.port(port);
-
+  boost::asio::ip::tcp::resolver::iterator it = resolver.resolve(query, ec);
+  
   OB_DIAG_REQUIRE(!ec, "Succesful querying hostname(" << hostname << ") from IIOP Profile"
                   , "Querying hostname(" << hostname << ") from IIOP Profile failed with error " << ec.message() << ". Check /etc/hosts in the server for any misconfigured hostnames")
 
+  boost::asio::ip::tcp::endpoint remote_endpoint = *it;
+  remote_endpoint.port(port);
   socket.connect(remote_endpoint, ec);
 
   OB_DIAG_REQUIRE(!ec, "Connection to hostname and port of IIOP Profile was succesful"

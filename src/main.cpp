@@ -84,31 +84,28 @@ struct reference_types
   {}
 };
 
-#define debug_msg std::cout << "[DEBUG] "
+#define info_msg std::cout << "[INFO] "
 
 void profile_body_test(std::string const& hostname, unsigned short port)
 {
   boost::asio::io_service io_service;
   boost::asio::ip::tcp::socket socket(io_service, boost::asio::ip::tcp::endpoint());
 
-  debug_msg << "Hostname: " << hostname
-            << " Port: " << port << std::endl;
-        
   boost::asio::ip::tcp::resolver resolver(io_service);
   boost::asio::ip::tcp::resolver::query query
     (boost::asio::ip::tcp::endpoint::protocol_type::v4(), hostname, "");
   boost::system::error_code ec;
   boost::asio::ip::tcp::resolver::iterator it = resolver.resolve(query, ec);
   
-  OB_DIAG_REQUIRE(!ec, "Succesful querying hostname(" << hostname << ") from IIOP Profile"
+  OB_DIAG_REQUIRE(!ec, "Successful querying hostname(" << hostname << ") from IIOP Profile"
                   , "Querying hostname(" << hostname << ") from IIOP Profile failed with error " << ec.message() << ". Check /etc/hosts in the server for any misconfigured hostnames")
 
   boost::asio::ip::tcp::endpoint remote_endpoint = *it;
   remote_endpoint.port(port);
   socket.connect(remote_endpoint, ec);
 
-  OB_DIAG_REQUIRE(!ec, "Connection to hostname and port of IIOP Profile was succesful"
-                  , "Connection to hostname and port of IIOP Profile was succesful failed with error " << ec.message())
+  OB_DIAG_REQUIRE(!ec, "Connection to hostname(" << hostname << ") and port(" << port << ") of IIOP Profile was successful"
+                  , "Connection to hostname(" << hostname << ") and port(" << port << ") of IIOP Profile failed with error " << ec.message())
 }
 
 struct login_info
@@ -127,8 +124,8 @@ int main(int argc, char** argv)
     boost::program_options::options_description desc("Allowed options");
     desc.add_options()
       ("help", "Shows this message")
-      ("host,h", boost::program_options::value<std::string>(), "Hostname of Openbus")
-      ("port,p", boost::program_options::value<unsigned short>(), "Port of Openbus")
+      ("host,h", boost::program_options::value<std::string>(), "Hostname of OpenBus")
+      ("port,p", boost::program_options::value<unsigned short>(), "Port of OpenBus")
       ;
 
     boost::program_options::variables_map vm;
@@ -139,7 +136,7 @@ int main(int argc, char** argv)
     if(vm.count("help") || !vm.count("host")
        || !vm.count("port"))
     {
-      debug_msg << desc << std::endl;
+      std::cout << desc << std::endl;
       return 1;
     }
 
@@ -202,7 +199,7 @@ int main(int argc, char** argv)
     {
       if(iiop::profile_body const* p = boost::get<iiop::profile_body>(&*first))
       {
-        debug_msg << "IIOP Profile Body" << std::endl;
+        info_msg << "Testing IIOP Profile Body" << std::endl;
         profile_body_test(fusion::at_c<0u>(*p), fusion::at_c<1u>(*p));
         if(access_control_object_key.empty())
           access_control_object_key = fusion::at_c<2u>(*p);
@@ -211,15 +208,11 @@ int main(int argc, char** argv)
       else if(reference_types::profile_body_1_1_attr const* p
               = boost::get<reference_types::profile_body_1_1_attr>(&*first))
       {
-        debug_msg << "IIOP Profile Body 1." << (int)fusion::at_c<0u>(*p) << std::endl;
+        info_msg << "Testing IIOP Profile Body 1." << (int)fusion::at_c<0u>(*p) << std::endl;
         profile_body_test(fusion::at_c<1u>(*p), fusion::at_c<2u>(*p));
         if(access_control_object_key.empty())
           access_control_object_key = fusion::at_c<3u>(*p);
         has_iiop_profile = true;
-      }
-      else
-      {
-        debug_msg << "Other Tagged Profiles" << std::endl;
       }
     }
 
@@ -241,15 +234,13 @@ int main(int argc, char** argv)
     buskey_args_type buskey_args;
     ob_diag::read_reply(socket, giop::sequence[giop::octet], buskey_args);
 
-    debug_msg << "Returned encoded buskey public key with size " << buskey_args.size() << std::endl;
-
     EVP_PKEY* bus_key;
     {
       unsigned char const* buf = &buskey_args[0];
       bus_key = d2i_PUBKEY(0, &buf, buskey_args.size());
     }
 
-    OB_DIAG_REQUIRE(bus_key != 0, "Read public key succesfully"
+    OB_DIAG_REQUIRE(bus_key != 0, "Read public key successfully"
                     , "Reading public key failed. This is a bug in the diagnostic or a bug in OpenBus")
   }
   catch(ob_diag::require_error const&)

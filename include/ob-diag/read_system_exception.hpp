@@ -51,7 +51,7 @@ system_exception read_system_exception(boost::asio::ip::tcp::socket& socket
                      , reply.attribute)
     && first == last;
   
-  OB_DIAG_REQUIRE(g, "Parsing reply succesfully"
+  OB_DIAG_REQUIRE(g, "Parsing reply successfully"
                   , "Parsing reply failed. This is a bug in the diagnostic or a bug in OpenBus")
 
   reply_type::variant_attribute_type variant_attr

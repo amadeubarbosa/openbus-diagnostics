@@ -83,7 +83,7 @@ session create_session(boost::asio::ip::tcp::socket& socket
                 , credential_reset)
     && first == last;
 
-  OB_DIAG_REQUIRE(g, "Parsing credential reset succesfully in context"
+  OB_DIAG_REQUIRE(g, "Parsing credential reset successfully in context"
                   , "Parsing credential reset failed in context. This is a bug in the diagnostic or a bug in OpenBus")
 
   std::vector<char> secret;
